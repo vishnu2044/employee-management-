@@ -16,9 +16,15 @@ export default function MarkAbsentModal({ isOpen, onClose, onSave }: MarkAbsentM
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [reason, setReason] = useState("");
 
-  const { data: employees = [] } = useQuery({
+  interface SimpleEmployee {
+    id: string;
+    full_name: string;
+    role?: string;
+  }
+
+  const { data: employees = [] } = useQuery<SimpleEmployee[]>({
     queryKey: ["employees"],
-    queryFn: attendanceApi.getEmployees,
+    queryFn: () => attendanceApi.getEmployees(true),
     enabled: isOpen
   });
 

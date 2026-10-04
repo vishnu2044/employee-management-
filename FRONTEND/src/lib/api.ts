@@ -149,6 +149,19 @@ export const attendanceApi = {
       throw new Error(`Failed to fetch attendance report: ${res.statusText}`);
     }
     return res.json();
+  },
+
+  getCompanyAttendanceReport: async (startDate: string, endDate: string, periodType: string = "weekly") => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem("supervisor_token") : null;
+    const res = await fetch(`${API_BASE_URL}/reports/company?start_date=${startDate}&end_date=${endDate}&period_type=${periodType}`, {
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch company attendance report: ${res.statusText}`);
+    }
+    return res.json();
   }
 };
 

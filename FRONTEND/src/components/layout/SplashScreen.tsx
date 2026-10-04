@@ -16,7 +16,7 @@ export default function SplashScreen() {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--color-background)] transition-opacity duration-500">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--color-background)] transition-opacity duration-500 print:hidden">
       <div className="flex items-center space-x-4">
         <div className="w-20 h-20 flex items-center justify-center shrink-0">
           <img src="/logo.jpg" alt="Piekarnia Putka Logo" className="w-full h-full object-contain" />

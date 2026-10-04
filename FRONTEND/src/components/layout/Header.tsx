@@ -36,6 +36,7 @@ export default function Header() {
   const allNavItems = [
     { name: "Attendance", path: "/attendance" },
     { name: "Employees", path: "/employees", authRequired: true },
+    { name: "Reports", path: "/reports", authRequired: true },
   ];
 
   const navItems = allNavItems.filter(item => !item.authRequired || isSupervisor);

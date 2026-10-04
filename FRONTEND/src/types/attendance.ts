@@ -67,3 +67,48 @@ export interface EmployeeReportData {
   late_days: number;
   average_daily_minutes: number;
 }
+
+export interface DailyReportRecord {
+  date: string;
+  entry_time: string | null;
+  exit_time: string | null;
+  shift: string | null;
+  worked_minutes: number;
+  late_minutes: number;
+  status: string;
+}
+
+export interface CompanyEmployeeReport {
+  employee_number: number;
+  employee_id: string;
+  employee_code: string;
+  employee_name: string;
+  role: string;
+  is_active: boolean;
+  shift: string | null;
+  total_worked_minutes: number;
+  present_days: number;
+  absent_days: number;
+  late_days: number;
+  records: DailyReportRecord[];
+}
+
+export interface CompanyReportSummary {
+  total_employees: number;
+  total_worked_minutes: number;
+  total_present_days: number;
+  total_absent_days: number;
+  total_late_days: number;
+}
+
+export interface CompanyAttendanceReportData {
+  company_name: string;
+  application_name: string;
+  report_title: string;
+  period_type: string;
+  start_date: string;
+  end_date: string;
+  generated_at: string;
+  summary: CompanyReportSummary;
+  employees: CompanyEmployeeReport[];
+}

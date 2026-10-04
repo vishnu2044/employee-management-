@@ -4,10 +4,19 @@ from uuid import UUID
 from datetime import date
 
 from app.core.database import get_db
-from app.schemas.report import EmployeeSummaryOut, EmployeeReportOut
+from app.schemas.report import EmployeeSummaryOut, EmployeeReportOut, CompanyAttendanceReportOut
 from app.services import report_service
 
 router = APIRouter()
+
+@router.get("/company", response_model=CompanyAttendanceReportOut)
+def get_company_attendance_report(
+    start_date: date,
+    end_date: date,
+    period_type: str = "weekly",
+    db: Session = Depends(get_db)
+):
+    return report_service.get_company_attendance_report(db, start_date, end_date, period_type)
 
 @router.get("/attendance", response_model=EmployeeReportOut)
 def get_attendance_report(

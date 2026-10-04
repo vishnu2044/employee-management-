@@ -147,6 +147,12 @@ export default function AttendanceTable({ data }: AttendanceTableProps) {
     exit?: string,
     lateMinutes?: number
   ) => {
+    const isExistingRecord = Boolean(entry || exit);
+    const isDifferentDate = dateStr !== data.today;
+    if ((isExistingRecord || isDifferentDate) && !isSupervisor) {
+      return;
+    }
+
     setSelectedEmployee({
       id: employeeId,
       name: employeeName,
@@ -365,15 +371,18 @@ export default function AttendanceTable({ data }: AttendanceTableProps) {
                         record={day}
                         todayStr={data.today}
                         isSupervisor={isSupervisor}
-                        onEditAttendance={() =>
-                          handleAddAttendance(
-                            emp.id,
-                            emp.name,
-                            day.date,
-                            day.entry_time || undefined,
-                            day.exit_time || undefined,
-                            day.late_minutes
-                          )
+                        onEditAttendance={
+                          isSupervisor
+                            ? () =>
+                                handleAddAttendance(
+                                  emp.id,
+                                  emp.name,
+                                  day.date,
+                                  day.entry_time || undefined,
+                                  day.exit_time || undefined,
+                                  day.late_minutes
+                                )
+                            : undefined
                         }
                         onAddAttendance={() =>
                           handleAddAttendance(

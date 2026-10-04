@@ -23,7 +23,7 @@ export default function RootLayout({
         <QueryProvider>
           <SplashScreen />
           <Header />
-          <main className="flex-grow p-3 sm:p-4 lg:p-8 max-w-[1440px] mx-auto w-full">
+          <main className="flex-grow p-3 sm:p-4 lg:p-8 max-w-[1440px] mx-auto w-full print:p-0 print:m-0 print:max-w-none print:w-full">
             {children}
           </main>
         </QueryProvider>

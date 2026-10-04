@@ -22,11 +22,16 @@ export default function AttendanceCell({
 
   const handleClick = () => {
     if (record.status === "PRESENT" || record.status === "LATE" || record.status === "ABSENT") {
-      if (onEditAttendance) onEditAttendance();
-      else if (onAddAttendance) onAddAttendance();
-    } else if (isToday) {
+      if (isSupervisor && onEditAttendance) {
+        onEditAttendance();
+      }
+      return;
+    }
+    if (isToday) {
       if (onAddAttendance) onAddAttendance();
-    } else if (isSupervisor && onAddAttendance) {
+      return;
+    }
+    if (isSupervisor && onAddAttendance) {
       onAddAttendance();
     }
   };
@@ -44,10 +49,9 @@ export default function AttendanceCell({
   if (record.status === "ABSENT") {
     return (
       <td
-        onClick={handleClick}
-        className={`px-2 py-1.5 border-r border-[var(--color-border)] bg-red-50/60 ${
-          isSupervisor ? "cursor-pointer hover:bg-red-100/70 transition group relative" : ""
-        }`}
+        onClick={isSupervisor ? handleClick : undefined}
+        className={`px-2 py-1.5 border-r border-[var(--color-border)] bg-red-50/60 ${isSupervisor ? "cursor-pointer hover:bg-red-100/70 transition group relative" : ""
+          }`}
       >
         <div className="flex flex-col items-center justify-center py-1">
           <span className="font-bold text-[0.65rem] text-[var(--color-primary-dark)] tracking-wider">
@@ -77,10 +81,9 @@ export default function AttendanceCell({
 
     return (
       <td
-        onClick={handleClick}
-        className={`px-1.5 py-1 border-r border-[var(--color-border)] relative ${cellClass} ${
-          isSupervisor ? "cursor-pointer transition group" : ""
-        }`}
+        onClick={isSupervisor ? handleClick : undefined}
+        className={`px-1.5 py-1 border-r border-[var(--color-border)] relative ${cellClass} ${isSupervisor ? "cursor-pointer transition group" : ""
+          }`}
       >
         <div className="flex flex-col items-center justify-center py-0.5">
           <div className="font-bold text-xs tracking-tight whitespace-nowrap font-mono">
@@ -88,7 +91,7 @@ export default function AttendanceCell({
           </div>
           {isLate && record.late_minutes > 0 ? (
             <div className="text-[0.6rem] font-bold text-[#D84315] uppercase tracking-wider mt-0.5">
-              SP (+{record.late_minutes}M)
+              SP ({record.late_minutes}M)
             </div>
           ) : null}
           {isSupervisor && (
@@ -121,9 +124,8 @@ export default function AttendanceCell({
     return (
       <td
         onClick={isSupervisor ? handleClick : undefined}
-        className={`px-2 py-1.5 text-center text-gray-300 border-r border-[var(--color-border)] ${
-          isSupervisor ? "cursor-pointer hover:bg-gray-100/60 group relative" : ""
-        }`}
+        className={`px-2 py-1.5 text-center text-gray-300 border-r border-[var(--color-border)] ${isSupervisor ? "cursor-pointer hover:bg-gray-100/60 group relative" : ""
+          }`}
       >
         <span className="text-gray-300 font-mono text-xs">—</span>
         {isSupervisor && (
@@ -139,9 +141,8 @@ export default function AttendanceCell({
   return (
     <td
       onClick={isSupervisor ? handleClick : undefined}
-      className={`px-2 py-1.5 text-center border-r border-[var(--color-border)] ${
-        isSupervisor ? "cursor-pointer hover:bg-gray-50 group relative" : ""
-      }`}
+      className={`px-2 py-1.5 text-center border-r border-[var(--color-border)] ${isSupervisor ? "cursor-pointer hover:bg-gray-50 group relative" : ""
+        }`}
     >
       <span className="text-[0.6rem] font-medium text-gray-300 tracking-wider uppercase">—</span>
       {isSupervisor && (
