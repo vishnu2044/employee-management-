@@ -64,7 +64,8 @@ def get_attendance_report(db: Session, employee_id: UUID, start_date: date, end_
             entry_time=r.entry_time,
             exit_time=r.exit_time,
             worked_minutes=r.worked_minutes,
-            status=r.status.value
+            late_minutes=r.late_minutes or 0,
+            status=r.status.value if hasattr(r.status, 'value') else str(r.status)
         ))
         total_minutes += r.worked_minutes
         if r.status in (AttendanceStatus.PRESENT, AttendanceStatus.LATE):

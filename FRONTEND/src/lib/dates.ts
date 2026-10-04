@@ -4,11 +4,11 @@ import { startOfWeek, endOfWeek, addWeeks, subWeeks, format, isToday, isBefore, 
 // as requested in the PRD (using date-fns for simplicity in the mockup)
 
 export function getWeekStart(date: Date = new Date()) {
-  return startOfWeek(date, { weekStartsOn: 1 }); // Monday start
+  return startOfWeek(date, { weekStartsOn: 0 }); // Sunday start
 }
 
 export function getWeekEnd(date: Date = new Date()) {
-  return endOfWeek(date, { weekStartsOn: 1 });
+  return endOfWeek(date, { weekStartsOn: 0 });
 }
 
 export function getNextWeek(date: Date) {

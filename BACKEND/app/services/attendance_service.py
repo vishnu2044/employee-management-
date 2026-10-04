@@ -18,19 +18,48 @@ def get_attendance_by_id(db: Session, attendance_id: UUID) -> Attendance:
     return att
 
 def create_attendance(db: Session, attendance_in: AttendanceCreate, is_supervisor: bool = False, username: Optional[str] = None) -> Attendance:
-    # Allow night shifts, so no exit <= entry validation here
-    
-    # Check duplicate
+    # Check duplicate or supervisor edit
     existing = db.query(Attendance).filter(
         Attendance.employee_id == attendance_in.employee_id,
         Attendance.attendance_date == attendance_in.attendance_date
     ).first()
-    if existing:
-        raise DuplicateEntityError("Attendance has already been recorded for this date")
     
     worked_min = calculate_worked_minutes(attendance_in.entry_time, attendance_in.exit_time)
-    late_min = calculate_late_minutes(attendance_in.entry_time)
+    if attendance_in.late_minutes is not None:
+        late_min = attendance_in.late_minutes
+    else:
+        late_min = calculate_late_minutes(attendance_in.entry_time)
+        
     status = AttendanceStatus.LATE if late_min > 0 else AttendanceStatus.PRESENT
+    
+    if existing:
+        if is_supervisor:
+            old_entry = existing.entry_time
+            old_exit = existing.exit_time
+            existing.entry_time = attendance_in.entry_time
+            existing.exit_time = attendance_in.exit_time
+            existing.worked_minutes = worked_min
+            existing.late_minutes = late_min
+            existing.status = status
+            existing.updated_by = username
+            
+            hist = AttendanceHistory(
+                attendance_id=existing.id,
+                employee_id=existing.employee_id,
+                attendance_date=existing.attendance_date,
+                old_entry_time=old_entry,
+                old_exit_time=old_exit,
+                new_entry_time=existing.entry_time,
+                new_exit_time=existing.exit_time,
+                action="SUPERVISOR_EDITED",
+                changed_by=username or "SUPERVISOR"
+            )
+            db.add(hist)
+            db.commit()
+            db.refresh(existing)
+            return existing
+        else:
+            raise DuplicateEntityError("Attendance has already been recorded for this date")
     
     att = Attendance(
         employee_id=attendance_in.employee_id,
@@ -77,7 +106,10 @@ def update_attendance(db: Session, attendance_id: UUID, attendance_in: Attendanc
     att.exit_time = new_exit
     if new_entry and new_exit:
         att.worked_minutes = calculate_worked_minutes(new_entry, new_exit)
-        att.late_minutes = calculate_late_minutes(new_entry)
+        if attendance_in.late_minutes is not None:
+            att.late_minutes = attendance_in.late_minutes
+        else:
+            att.late_minutes = calculate_late_minutes(new_entry)
         att.status = AttendanceStatus.LATE if att.late_minutes > 0 else AttendanceStatus.PRESENT
         
     att.updated_by = username
@@ -149,7 +181,7 @@ def remove_absence(db: Session, attendance_id: UUID, username: str):
     db.delete(att)
     db.commit()
 
-def get_weekly_attendance(db: Session, target_date: date) -> WeeklyAttendanceOut:
+def get_weekly_attendance(db: Session, target_date: date, include_inactive: bool = False) -> WeeklyAttendanceOut:
     week_start, week_end = get_week_range(target_date)
     today = get_week_range(date.today())[0] # dummy check, we should pass current business date actually
     from app.utils.datetime import get_current_business_date
@@ -157,18 +189,16 @@ def get_weekly_attendance(db: Session, target_date: date) -> WeeklyAttendanceOut
     
     active_employees = db.query(Employee).filter(Employee.is_active == True).all()
     
+    if include_inactive:
+        inactive_employees = db.query(Employee).filter(Employee.is_active == False).all()
+        employees = active_employees + inactive_employees
+    else:
+        employees = active_employees
+    
     attendances = db.query(Attendance).filter(
         Attendance.attendance_date >= week_start,
         Attendance.attendance_date <= week_end
     ).all()
-    
-    emp_ids_with_att = list(set([a.employee_id for a in attendances]))
-    inactive_employees_with_att = db.query(Employee).filter(
-        Employee.is_active == False,
-        Employee.id.in_(emp_ids_with_att)
-    ).all() if emp_ids_with_att else []
-    
-    employees = active_employees + inactive_employees_with_att
     
     att_map = {}
     for a in attendances:
@@ -181,7 +211,7 @@ def get_weekly_attendance(db: Session, target_date: date) -> WeeklyAttendanceOut
     today_late = 0
     today_absent = 0
     
-    for emp in employees:
+    for idx, emp in enumerate(employees):
         weekly_total = 0
         days = []
         import datetime
@@ -192,6 +222,7 @@ def get_weekly_attendance(db: Session, target_date: date) -> WeeklyAttendanceOut
             if emp_att:
                 weekly_total += emp_att.worked_minutes
                 days.append(DayAttendance(
+                    id=emp_att.id,
                     date=current_day,
                     status=emp_att.status,
                     entry_time=emp_att.entry_time,
@@ -209,6 +240,7 @@ def get_weekly_attendance(db: Session, target_date: date) -> WeeklyAttendanceOut
                         today_absent += 1
             else:
                 days.append(DayAttendance(
+                    id=None,
                     date=current_day,
                     status="UPCOMING",
                     entry_time=None,
@@ -221,6 +253,8 @@ def get_weekly_attendance(db: Session, target_date: date) -> WeeklyAttendanceOut
             id=emp.id,
             name=emp.full_name,
             role=emp.role,
+            is_active=emp.is_active,
+            machine=f"Machine {(idx % 4) + 1}",
             weekly_total_minutes=weekly_total,
             days=days
         ))

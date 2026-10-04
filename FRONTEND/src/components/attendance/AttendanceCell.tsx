@@ -1,93 +1,154 @@
+"use client";
+
 import { AttendanceRecord } from "@/types/attendance";
-import { formatDuration } from "@/lib/dates";
-import { CheckCircle2, PlusCircle } from "lucide-react";
+import { PlusCircle, Pencil, Plus } from "lucide-react";
 
 interface AttendanceCellProps {
   record: AttendanceRecord;
   todayStr: string;
+  isSupervisor?: boolean;
+  onEditAttendance?: () => void;
   onAddAttendance?: () => void;
 }
 
-export default function AttendanceCell({ record, todayStr, onAddAttendance }: AttendanceCellProps) {
+export default function AttendanceCell({
+  record,
+  todayStr,
+  isSupervisor = false,
+  onEditAttendance,
+  onAddAttendance,
+}: AttendanceCellProps) {
   const isToday = record.date === todayStr;
 
-  let bgClass = "";
-  if (isToday) bgClass = "bg-[var(--color-today-bg)] border border-[var(--color-primary-dark)]";
-  else if (record.status === "LATE") bgClass = "bg-[var(--color-late-bg)]";
-  else if (record.status === "ABSENT") bgClass = "bg-[var(--color-absent-bg)]";
+  const handleClick = () => {
+    if (record.status === "PRESENT" || record.status === "LATE" || record.status === "ABSENT") {
+      if (onEditAttendance) onEditAttendance();
+      else if (onAddAttendance) onAddAttendance();
+    } else if (isToday) {
+      if (onAddAttendance) onAddAttendance();
+    } else if (isSupervisor && onAddAttendance) {
+      onAddAttendance();
+    }
+  };
 
+  // Weekend
   if (record.status === "WEEKEND") {
     return (
-      <td className="px-6 py-4 text-center text-xs tracking-widest text-gray-400 font-semibold uppercase border-r border-[var(--color-border)]">
+      <td className="px-2 py-1.5 text-center text-[0.65rem] tracking-wider text-gray-400 font-medium uppercase border-r border-[var(--color-border)] bg-gray-50/40">
         Weekend
       </td>
     );
   }
 
+  // Absent
   if (record.status === "ABSENT") {
     return (
-      <td className={`px-6 py-4 align-middle border-r border-[var(--color-border)] ${bgClass}`}>
-        <div className="flex flex-col items-center justify-center h-full space-y-1 py-4">
-          <span className="font-bold text-[var(--color-primary-dark)] tracking-wider">ABSENT</span>
-          <span className="text-[0.65rem] text-gray-500 uppercase tracking-widest">Scheduled Leave</span>
+      <td
+        onClick={handleClick}
+        className={`px-2 py-1.5 border-r border-[var(--color-border)] bg-red-50/60 ${
+          isSupervisor ? "cursor-pointer hover:bg-red-100/70 transition group relative" : ""
+        }`}
+      >
+        <div className="flex flex-col items-center justify-center py-1">
+          <span className="font-bold text-[0.65rem] text-[var(--color-primary-dark)] tracking-wider">
+            ABSENT
+          </span>
+          <span className="text-[0.55rem] text-gray-500 uppercase tracking-tight">
+            Leave
+          </span>
+          {isSupervisor && (
+            <span className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition text-[var(--color-primary-dark)]">
+              <Pencil size={11} />
+            </span>
+          )}
         </div>
       </td>
     );
   }
 
+  // Present or Late
   if (record.status === "PRESENT" || record.status === "LATE") {
-    // Determine shift
-    let shift = "DAY";
-    if (record.entry_time && record.exit_time) {
-      const [eH, eM] = record.entry_time.split(":").map(Number);
-      const [xH, xM] = record.exit_time.split(":").map(Number);
-      if (xH * 60 + xM < eH * 60 + eM || eH >= 16) {
-        shift = "NIGHT";
-      }
-    }
+    const isLate = record.status === "LATE" || (Boolean(record.late_minutes) && record.late_minutes > 0);
+
+    // Green color for on-time, reddish for late
+    const cellClass = isLate
+      ? "bg-[#FFF0F0] text-[#B71C1C] border border-[#FFCDD2]/60 hover:bg-[#FFE5E5]"
+      : "bg-[#E8F5E9] text-[#1B5E20] border border-[#C8E6C9]/80 hover:bg-[#DCEDC8]";
 
     return (
-      <td className={`px-2 py-3 border-r border-[var(--color-border)] ${bgClass} ${record.status === "LATE" ? "bg-[var(--color-late-bg)]" : ""}`}>
-        <div className="flex flex-col space-y-1 w-full mx-auto text-center items-center justify-center">
-          <div className="font-bold text-sm tracking-wide">{record.entry_time} - {record.exit_time}</div>
-          
-          <div className="flex flex-col items-center justify-center mt-1 pt-1 border-t border-black/5 w-full">
-            <span className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">{shift}</span>
-            {record.status === "LATE" && (
-              <span className="mt-1 text-[#D84315] text-[0.6rem] font-bold px-1 rounded tracking-widest uppercase">
-                SP (+{record.late_minutes}M)
-              </span>
-            )}
+      <td
+        onClick={handleClick}
+        className={`px-1.5 py-1 border-r border-[var(--color-border)] relative ${cellClass} ${
+          isSupervisor ? "cursor-pointer transition group" : ""
+        }`}
+      >
+        <div className="flex flex-col items-center justify-center py-0.5">
+          <div className="font-bold text-xs tracking-tight whitespace-nowrap font-mono">
+            {record.entry_time} - {record.exit_time}
           </div>
+          {isLate && record.late_minutes > 0 ? (
+            <div className="text-[0.6rem] font-bold text-[#D84315] uppercase tracking-wider mt-0.5">
+              SP (+{record.late_minutes}M)
+            </div>
+          ) : null}
+          {isSupervisor && (
+            <span className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition text-gray-700 bg-white/80 p-0.5 rounded shadow-xs">
+              <Pencil size={10} />
+            </span>
+          )}
         </div>
       </td>
     );
   }
 
+  // Today with no attendance yet
   if (isToday) {
     return (
-      <td className={`px-6 py-4 border-r border-[var(--color-border)] ${bgClass}`}>
-        <div className="flex h-full items-center justify-center py-2">
-          <button onClick={onAddAttendance} className="flex flex-col items-center justify-center space-y-2 bg-white text-[var(--color-primary-dark)] border border-[var(--color-border)] rounded shadow-sm py-3 px-4 hover:border-[var(--color-primary-dark)] hover:bg-red-50 transition w-full">
-            <PlusCircle size={20} />
-            <span className="text-[0.65rem] font-bold tracking-widest uppercase text-center">Add<br/>Attendance</span>
-          </button>
-        </div>
+      <td className="px-2 py-1 border-r border-[var(--color-border)] bg-[var(--color-today-bg)]">
+        <button
+          onClick={onAddAttendance}
+          className="flex items-center justify-center space-x-1 bg-white text-[var(--color-primary-dark)] border border-[var(--color-primary-dark)]/30 rounded py-1 px-2 hover:bg-red-50 transition w-full shadow-xs text-center"
+        >
+          <Plus size={13} />
+          <span className="text-[0.65rem] font-bold tracking-wider uppercase">Add</span>
+        </button>
       </td>
     );
   }
 
-  if (record.date > todayStr) {
+  // Past day without attendance
+  if (record.date < todayStr) {
     return (
-      <td className="px-6 py-4 text-center border-r border-[var(--color-border)]">
-        <span className="text-[0.6rem] font-bold text-gray-300 tracking-widest uppercase">Upcoming</span>
+      <td
+        onClick={isSupervisor ? handleClick : undefined}
+        className={`px-2 py-1.5 text-center text-gray-300 border-r border-[var(--color-border)] ${
+          isSupervisor ? "cursor-pointer hover:bg-gray-100/60 group relative" : ""
+        }`}
+      >
+        <span className="text-gray-300 font-mono text-xs">—</span>
+        {isSupervisor && (
+          <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-gray-50/80 text-gray-600 text-[0.65rem] font-bold transition">
+            <Plus size={12} className="mr-0.5" /> Add
+          </span>
+        )}
       </td>
     );
   }
 
+  // Upcoming day
   return (
-    <td className="px-6 py-4 text-center text-gray-300 border-r border-[var(--color-border)]">
-      —
+    <td
+      onClick={isSupervisor ? handleClick : undefined}
+      className={`px-2 py-1.5 text-center border-r border-[var(--color-border)] ${
+        isSupervisor ? "cursor-pointer hover:bg-gray-50 group relative" : ""
+      }`}
+    >
+      <span className="text-[0.6rem] font-medium text-gray-300 tracking-wider uppercase">—</span>
+      {isSupervisor && (
+        <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-gray-50/80 text-gray-600 text-[0.6rem] font-bold transition">
+          <Plus size={11} className="mr-0.5" /> Set
+        </span>
+      )}
     </td>
   );
 }

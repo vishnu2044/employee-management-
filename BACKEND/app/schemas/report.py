@@ -18,6 +18,7 @@ class ReportAttendanceRecord(BaseModel):
     entry_time: Optional[str]
     exit_time: Optional[str]
     worked_minutes: int
+    late_minutes: Optional[int] = 0
     status: str
 
 class EmployeeReportOut(BaseModel):

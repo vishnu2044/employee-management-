@@ -39,14 +39,14 @@ export default function EmployeesList() {
   }, []);
 
   const { data: weekData, isLoading } = useQuery({
-    queryKey: ["attendance", "week", dateStr],
-    queryFn: () => attendanceApi.getWeek(dateStr),
+    queryKey: ["attendance", "week", dateStr, "all"],
+    queryFn: () => attendanceApi.getWeek(dateStr, true),
   });
 
   const handleAddEmployee = async (data: { full_name: string; role: string }) => {
     try {
       await attendanceApi.createEmployee(data);
-      queryClient.invalidateQueries({ queryKey: ["attendance", "week", dateStr] });
+      queryClient.invalidateQueries({ queryKey: ["attendance", "week"] });
       setIsAddModalOpen(false);
     } catch (err) {
       console.error(err);
@@ -155,71 +155,82 @@ export default function EmployeesList() {
                 <th className="px-6 py-3 font-bold sticky left-12 bg-gray-50/90 z-10 border-r border-[var(--color-border)] shadow-[1px_0_3px_-1px_rgba(0,0,0,0.1)]">Employee</th>
                 <th className="px-6 py-3 font-bold">Status</th>
                 <th className="px-6 py-3 font-bold">Today</th>
-                <th className="px-6 py-3 font-bold">Week Hours</th>
                 <th className="px-6 py-3 font-bold text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500 font-bold uppercase tracking-widest">Loading...</td></tr>
+                <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500 font-bold uppercase tracking-widest">Loading...</td></tr>
               ) : processedEmployees.length === 0 ? (
-                <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500 font-bold uppercase tracking-widest">No employees found</td></tr>
-              ) : processedEmployees.map((emp: any, idx: number) => (
-                <tr key={emp.id} className="border-b border-[var(--color-border)] hover:bg-gray-50/50 transition-colors group">
-                  <td className="px-4 py-3 text-center text-gray-400 font-mono text-xs sticky left-0 bg-white group-hover:bg-gray-50/50 transition-colors z-10">
-                    {(idx + 1).toString().padStart(2, '0')}
-                  </td>
-                  <td className="px-6 py-3 border-r border-[var(--color-border)] sticky left-12 bg-white group-hover:bg-gray-50/50 transition-colors z-10 shadow-[1px_0_3px_-1px_rgba(0,0,0,0.1)]">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center font-bold text-gray-500 shrink-0 text-xs border border-[var(--color-border)]">
-                        {emp.name ? emp.name.split(" ").map((n: string) => n[0]).join("") : <Users size={14} />}
+                <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500 font-bold uppercase tracking-widest">No employees found</td></tr>
+              ) : processedEmployees.map((emp: any, idx: number) => {
+                const isInactive = emp.is_active === false;
+                return (
+                  <tr 
+                    key={emp.id} 
+                    onClick={() => router.push(`/employees/${emp.id}`)}
+                    className={`border-b border-[var(--color-border)] hover:bg-gray-50/80 cursor-pointer transition-colors group ${isInactive ? "opacity-75 bg-gray-50/30" : ""}`}
+                  >
+                    <td className="px-4 py-3 text-center text-gray-400 font-mono text-xs sticky left-0 bg-white group-hover:bg-gray-50/80 transition-colors z-10">
+                      {(idx + 1).toString().padStart(2, '0')}
+                    </td>
+                    <td className="px-6 py-3 border-r border-[var(--color-border)] sticky left-12 bg-white group-hover:bg-gray-50/80 transition-colors z-10 shadow-[1px_0_3px_-1px_rgba(0,0,0,0.1)]">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center font-bold text-gray-500 shrink-0 text-xs border border-[var(--color-border)]">
+                          {emp.name ? emp.name.split(" ").map((n: string) => n[0]).join("") : <Users size={14} />}
+                        </div>
+                        <div>
+                          <p className="font-bold text-[var(--color-foreground)] leading-tight group-hover:text-[var(--color-primary)] transition-colors">{emp.name}</p>
+                          <p className="text-[0.65rem] text-[var(--color-secondary-text)] leading-tight">
+                            {emp.role || "Employee"} • <span className="font-mono text-gray-400">{emp.id.split("-")[0]}</span>
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-[var(--color-foreground)] leading-tight">{emp.name}</p>
-                        <p className="text-[0.65rem] text-[var(--color-secondary-text)] leading-tight">{emp.role || "Employee"} • <span className="font-mono text-gray-400">{emp.id.split("-")[0]}</span></p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-3">
-                    {emp.todayStatus === "PRESENT" && <span className="bg-[#E8F5E9] text-[var(--color-success-text)] font-bold text-[0.6rem] px-2 py-0.5 rounded tracking-widest uppercase">PRESENT</span>}
-                    {emp.todayStatus === "LATE" && <span className="bg-[#FFE5E5] text-[#D84315] font-bold text-[0.6rem] px-2 py-0.5 rounded tracking-widest uppercase">LATE</span>}
-                    {emp.todayStatus === "ABSENT" && <span className="bg-[#FFEBEE] text-[var(--color-primary-dark)] font-bold text-[0.6rem] px-2 py-0.5 rounded tracking-widest uppercase">ABSENT</span>}
-                    {!["PRESENT", "LATE", "ABSENT"].includes(emp.todayStatus) && <span className="text-gray-400 font-medium text-xs">{emp.todayStatus}</span>}
-                  </td>
-                  <td className="px-6 py-3 font-bold text-gray-800 text-sm">
-                    {formatDuration(emp.todayWorked)}
-                  </td>
-                  <td className="px-6 py-3 font-bold text-[var(--color-primary-dark)] text-sm">
-                    {formatDuration(emp.weekly_total_minutes)}
-                  </td>
-                  <td className="px-6 py-3 text-right whitespace-nowrap">
-                    <div className="flex items-center justify-end space-x-4 text-[0.65rem] font-bold tracking-widest uppercase">
-                      <button onClick={() => router.push(`/employees/${emp.id}`)} className="text-gray-500 hover:text-black transition-colors">VIEW</button>
-                      
-                      {isSupervisor && (
+                    </td>
+                    <td className="px-6 py-3">
+                      {isInactive ? (
+                        <div className="flex flex-col">
+                          <span className="bg-gray-200 text-gray-600 font-bold text-[0.6rem] px-2 py-0.5 rounded tracking-widest uppercase w-max">
+                            NO LONGER WORKS HERE
+                          </span>
+                        </div>
+                      ) : (
                         <>
-                          <button className="text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] transition-colors">EDIT</button>
-                          <button 
-                            onClick={async () => {
-                              if (confirm(`Are you sure you want to remove ${emp.name}?`)) {
-                                try {
-                                  await attendanceApi.removeEmployee(emp.id);
-                                  queryClient.invalidateQueries({ queryKey: ["attendance", "week"] });
-                                } catch (e) {
-                                  alert("Failed to remove employee. You may need to log in again.");
-                                }
-                              }
-                            }}
-                            className="text-[var(--color-primary)] hover:text-red-700 transition-colors"
-                          >
-                            REMOVE
-                          </button>
+                          {emp.todayStatus === "PRESENT" && <span className="bg-[#E8F5E9] text-[var(--color-success-text)] font-bold text-[0.6rem] px-2 py-0.5 rounded tracking-widest uppercase">PRESENT</span>}
+                          {emp.todayStatus === "LATE" && <span className="bg-[#FFE5E5] text-[#D84315] font-bold text-[0.6rem] px-2 py-0.5 rounded tracking-widest uppercase">LATE</span>}
+                          {emp.todayStatus === "ABSENT" && <span className="bg-[#FFEBEE] text-[var(--color-primary-dark)] font-bold text-[0.6rem] px-2 py-0.5 rounded tracking-widest uppercase">ABSENT</span>}
+                          {!["PRESENT", "LATE", "ABSENT"].includes(emp.todayStatus) && <span className="text-gray-400 font-medium text-xs">{emp.todayStatus}</span>}
                         </>
                       )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-3 font-bold text-gray-800 text-sm">
+                      {isInactive ? "—" : formatDuration(emp.todayWorked)}
+                    </td>
+                    <td className="px-6 py-3 text-right whitespace-nowrap">
+                      {isSupervisor && !isInactive ? (
+                        <button 
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (confirm(`Are you sure you want to remove ${emp.name}?`)) {
+                              try {
+                                await attendanceApi.removeEmployee(emp.id);
+                                queryClient.invalidateQueries({ queryKey: ["attendance", "week"] });
+                              } catch (err) {
+                                alert("Failed to remove employee. You may need to log in again.");
+                              }
+                            }
+                          }}
+                          className="text-[0.65rem] font-bold tracking-widest uppercase text-[var(--color-primary)] hover:text-red-700 transition-colors p-1"
+                        >
+                          REMOVE
+                        </button>
+                      ) : (
+                        <span className="text-gray-300 text-xs">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

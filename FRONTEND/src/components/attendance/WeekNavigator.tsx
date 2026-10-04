@@ -21,10 +21,10 @@ export default function WeekNavigator({
   todayAbsent = 0,
   isSupervisor = false
 }: WeekNavigatorProps) {
-  const start = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const end = endOfWeek(currentDate, { weekStartsOn: 1 });
+  const start = startOfWeek(currentDate, { weekStartsOn: 0 });
+  const end = endOfWeek(currentDate, { weekStartsOn: 0 });
 
-  const isCurrentWeek = start.getTime() === startOfWeek(new Date(), { weekStartsOn: 1 }).getTime();
+  const isCurrentWeek = start.getTime() === startOfWeek(new Date(), { weekStartsOn: 0 }).getTime();
 
   return (
     <div className="flex flex-col space-y-3 w-full lg:w-auto">

@@ -14,6 +14,8 @@ export interface EmployeeWeeklyAttendance {
   id: string;
   name: string;
   role: string;
+  is_active?: boolean;
+  machine?: string;
   weekly_total_minutes: number;
   days_worked: number;
   days: AttendanceRecord[];
@@ -27,4 +29,41 @@ export interface WeeklyAttendanceResponse {
   today_late: number;
   today_absent: number;
   employees: EmployeeWeeklyAttendance[];
+}
+
+export interface AttendanceHistoryRecord {
+  id: string;
+  attendance_id: string;
+  employee_id: string;
+  attendance_date: string;
+  old_entry_time: string | null;
+  old_exit_time: string | null;
+  new_entry_time: string | null;
+  new_exit_time: string | null;
+  action: string;
+  reason: string | null;
+  changed_by: string | null;
+  created_at: string;
+}
+
+export interface ReportAttendanceRecord {
+  attendance_date: string;
+  entry_time: string | null;
+  exit_time: string | null;
+  worked_minutes: number;
+  late_minutes?: number;
+  status: string;
+}
+
+export interface EmployeeReportData {
+  employee_id: string;
+  employee_name: string;
+  start_date: string;
+  end_date: string;
+  records: ReportAttendanceRecord[];
+  total_worked_minutes: number;
+  present_days: number;
+  absent_days: number;
+  late_days: number;
+  average_daily_minutes: number;
 }

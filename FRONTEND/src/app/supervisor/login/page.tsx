@@ -24,7 +24,7 @@ export default function SupervisorLogin() {
         localStorage.setItem("supervisor_token", result.access_token);
         window.dispatchEvent(new Event("auth-change"));
       }
-      router.push("/supervisor");
+      router.push("/attendance");
     } catch (err: any) {
       setError(err.message || "Invalid username or password");
     } finally {

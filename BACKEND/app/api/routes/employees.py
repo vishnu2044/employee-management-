@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from app.core.database import get_db
 from app.schemas.employee import EmployeeCreate, EmployeeUpdate, EmployeeOut
+from app.schemas.attendance import AttendanceHistoryOut
 from app.services import employee_service
 from app.api.deps import get_current_supervisor
 
@@ -77,3 +78,16 @@ def get_employee_analytics(id: UUID, db: Session = Depends(get_db)):
         "today_minutes": today_minutes,
         "today_entry": today_entry
     }
+
+@router.get("/{id}/history", response_model=List[AttendanceHistoryOut])
+def get_employee_history(
+    id: UUID,
+    action: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    from app.models.attendance_history import AttendanceHistory
+    query = db.query(AttendanceHistory).filter(AttendanceHistory.employee_id == id)
+    if action and action != "ALL":
+        query = query.filter(AttendanceHistory.action == action)
+    return query.order_by(AttendanceHistory.created_at.desc()).all()
+
