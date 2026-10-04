@@ -1,0 +1,100 @@
+# =========================
+# Node.js / Next.js (FRONTEND)
+# =========================
+# dependencies
+FRONTEND/node_modules/
+FRONTEND/.pnp
+FRONTEND/.pnp.js
+
+# testing
+FRONTEND/coverage/
+
+# next.js
+FRONTEND/.next/
+FRONTEND/out/
+
+# production
+FRONTEND/build/
+
+# misc
+FRONTEND/.DS_Store
+FRONTEND/*.pem
+
+# debug
+FRONTEND/npm-debug.log*
+FRONTEND/yarn-debug.log*
+FRONTEND/yarn-error.log*
+FRONTEND/.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+FRONTEND/.env*
+!FRONTEND/.env.example
+
+# vercel
+FRONTEND/.vercel
+
+# typescript
+FRONTEND/*.tsbuildinfo
+FRONTEND/next-env.d.ts
+
+# =========================
+# Python / FastAPI (BACKEND)
+# =========================
+# Byte-compiled / optimized / DLL files
+BACKEND/__pycache__/
+BACKEND/*.py[cod]
+BACKEND/*$py.class
+
+# C extensions
+BACKEND/*.so
+
+# Distribution / packaging
+BACKEND/.Python
+BACKEND/build/
+BACKEND/develop-eggs/
+BACKEND/dist/
+BACKEND/downloads/
+BACKEND/eggs/
+BACKEND/.eggs/
+BACKEND/lib/
+BACKEND/lib64/
+BACKEND/parts/
+BACKEND/sdist/
+BACKEND/var/
+BACKEND/wheels/
+BACKEND/share/python-wheels/
+BACKEND/*.egg-info/
+BACKEND/.installed.cfg
+BACKEND/*.egg
+BACKEND/MANIFEST
+
+# Virtual environments
+BACKEND/.env
+BACKEND/.venv
+BACKEND/env/
+BACKEND/venv/
+BACKEND/ENV/
+BACKEND/env.bak/
+BACKEND/venv.bak/
+
+# Environment variables
+BACKEND/.env
+BACKEND/.env.*
+!BACKEND/.env.example
+
+# SQLite Database
+BACKEND/*.sqlite3
+BACKEND/app.db
+BACKEND/employee_attendance.db
+
+# Misc
+BACKEND/.pytest_cache/
+BACKEND/.mypy_cache/
+BACKEND/.ruff_cache/
+BACKEND/.vscode/
+BACKEND/.idea/
+
+# Root level
+.DS_Store
+.idea/
+.vscode/

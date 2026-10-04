@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #F7F3EC;
+  --color-foreground: #191716;
+  --color-primary: #9F1717;
+  --color-primary-dark: #7C0E0E;
+  --color-secondary-text: #706B65;
+  --color-border: #E4DDD4;
+  --color-white: #FFFFFF;
+  --color-today-bg: #FDF3F3; /* light red/cream */
+  --color-late-bg: #FFE5E5; /* muted red/pink */
+  --color-absent-bg: #EAE6E1; /* muted gray/red - tweaked for absent */
+  --color-success: #E8F5E9; /* muted green */
+  --color-success-text: #2E7D32;
+}
+
+:root {
+  --background: #F7F3EC;
+  --foreground: #191716;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+}
+
+/* Custom scrollbar for horizontal scrolling table */
+.scrollable-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+.scrollable-table-container::-webkit-scrollbar-track {
+  background: #F7F3EC;
+}
+.scrollable-table-container::-webkit-scrollbar-thumb {
+  background: #D5CFC5;
+  border-radius: 4px;
+}
+.scrollable-table-container::-webkit-scrollbar-thumb:hover {
+  background: #B5AFA5;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
