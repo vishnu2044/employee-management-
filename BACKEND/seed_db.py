@@ -12,6 +12,7 @@ from app.models.employee import Employee
 from app.models.supervisor import Supervisor
 from app.models.attendance import Attendance, AttendanceStatus
 from app.core.security import get_password_hash
+from app.utils.calculations import calculate_worked_minutes, calculate_late_minutes
 
 # create tables if not exists
 Base.metadata.create_all(bind=engine)
@@ -27,14 +28,21 @@ def seed_data():
             is_active=True
         )
         db.add(sup)
+        db.commit()
     
-    # 2. Add Employees
+    # 2. Add Employees (Original 5 + 5 New Employees = 10 total)
     employees_data = [
         {"full_name": "John Mathew", "role": "Software Engineer"},
         {"full_name": "Sarah Connor", "role": "Project Manager"},
         {"full_name": "Michael Scott", "role": "Regional Manager"},
         {"full_name": "Jim Halpert", "role": "Sales Representative"},
-        {"full_name": "Pam Beesly", "role": "Receptionist"}
+        {"full_name": "Pam Beesly", "role": "Receptionist"},
+        # 5 New Employees
+        {"full_name": "Dwight Schrute", "role": "Assistant Regional Manager"},
+        {"full_name": "Angela Martin", "role": "Senior Accountant"},
+        {"full_name": "Stanley Hudson", "role": "Sales Executive"},
+        {"full_name": "Ryan Howard", "role": "Business Analyst"},
+        {"full_name": "Kelly Kapoor", "role": "Customer Support Lead"}
     ]
     
     employees = []
@@ -47,50 +55,54 @@ def seed_data():
             db.refresh(emp)
         employees.append(emp)
         
-    if not employees:
-        employees = db.query(Employee).all()
-        
-    # Delete old fake users from the screenshot (e.g. software engineer, developer)
+    # Delete old placeholder names if present
     db.query(Employee).filter(Employee.full_name.in_(["software engineer", "developer"])).delete()
     db.commit()
         
-    # 3. Add last month data
+    # 3. Add last 2 months (60 days) of attendance data up to today
     today = datetime.date.today()
-    start_date = today - datetime.timedelta(days=35)
+    days_to_seed = 62  # approx. 2 full months
+    start_date = today - datetime.timedelta(days=days_to_seed)
     
-    for i in range(35):
+    added_count = 0
+    for i in range(days_to_seed + 1):
         current_date = start_date + datetime.timedelta(days=i)
         
-        # Skip weekends (0=Mon, 6=Sun)
+        # Skip future dates
+        if current_date > today:
+            continue
+            
+        # Skip weekends (5=Saturday, 6=Sunday)
         if current_date.weekday() >= 5:
             continue
             
         for emp in employees:
-            # Check if attendance already exists
+            # Check if attendance already exists for this employee & date
             if db.query(Attendance).filter_by(employee_id=emp.id, attendance_date=current_date).first():
                 continue
                 
-            # Randomly assign status
+            # Randomly assign realistic status
             rand = random.random()
-            if rand < 0.8: # 80% Present on time
+            if rand < 0.82:  # ~82% Present on time
                 status = AttendanceStatus.PRESENT
-                entry_time = "08:30"
-                exit_time = "17:30"
-                worked_minutes = 9 * 60
+                entry_min = random.choice([20, 25, 30, 35, 40, 45, 50])
+                entry_time = f"08:{entry_min:02d}"
+                exit_hour = random.choice([17, 18])
+                exit_min = random.choice([0, 15, 30])
+                exit_time = f"{exit_hour:02d}:{exit_min:02d}"
+                worked_minutes = calculate_worked_minutes(entry_time, exit_time)
                 late_minutes = 0
-            elif rand < 0.9: # 10% Late
+            elif rand < 0.93:  # ~11% Late
                 status = AttendanceStatus.LATE
-                entry_time = "09:15"
-                exit_time = "17:30"
-                worked_minutes = 8 * 60 + 15
-                late_minutes = 45
-            elif rand < 0.95: # 5% Absent
-                status = AttendanceStatus.ABSENT
-                entry_time = None
-                exit_time = None
-                worked_minutes = 0
-                late_minutes = 0
-            else: # 5% Sick leave (mark as absent for now)
+                entry_hour = 9
+                entry_min = random.choice([10, 15, 20, 30, 45])
+                entry_time = f"{entry_hour:02d}:{entry_min:02d}"
+                exit_hour = random.choice([17, 18])
+                exit_min = random.choice([15, 30, 45])
+                exit_time = f"{exit_hour:02d}:{exit_min:02d}"
+                worked_minutes = calculate_worked_minutes(entry_time, exit_time)
+                late_minutes = calculate_late_minutes(entry_time)
+            else:  # ~7% Absent
                 status = AttendanceStatus.ABSENT
                 entry_time = None
                 exit_time = None
@@ -107,10 +119,12 @@ def seed_data():
                 status=status
             )
             db.add(att)
+            added_count += 1
             
     db.commit()
     db.close()
-    print("Database seeded successfully with demo data.")
+    print(f"Database seeded successfully: {len(employees)} employees, {added_count} new attendance records added.")
 
 if __name__ == "__main__":
     seed_data()
+
