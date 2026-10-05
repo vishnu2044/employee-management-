@@ -59,17 +59,22 @@ def seed_data():
     db.query(Employee).filter(Employee.full_name.in_(["software engineer", "developer"])).delete()
     db.commit()
         
-    # 3. Add last 2 months (60 days) of attendance data up to today
+    # 3. Add last 2 months of attendance data up to yesterday (never today)
     today = datetime.date.today()
+    
+    # Ensure today's data is never pre-populated (must be entered by user/supervisor)
+    db.query(Attendance).filter(Attendance.attendance_date >= today).delete()
+    db.commit()
+    
     days_to_seed = 62  # approx. 2 full months
     start_date = today - datetime.timedelta(days=days_to_seed)
     
     added_count = 0
-    for i in range(days_to_seed + 1):
+    for i in range(days_to_seed):
         current_date = start_date + datetime.timedelta(days=i)
         
-        # Skip future dates
-        if current_date > today:
+        # Skip today and future dates
+        if current_date >= today:
             continue
             
         # Skip weekends (5=Saturday, 6=Sunday)

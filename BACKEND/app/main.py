@@ -21,4 +21,3 @@ app.include_router(reports.router, prefix="/api/v1/reports", tags=["reports"])
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
-#this is just for testing for push the new data 
