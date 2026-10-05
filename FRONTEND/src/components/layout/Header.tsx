@@ -30,7 +30,7 @@ export default function Header() {
   const handleLogout = () => {
     localStorage.removeItem("supervisor_token");
     window.dispatchEvent(new Event("auth-change"));
-    router.push("/attendance");
+    window.location.href = "/attendance";
   };
 
   const allNavItems = [

@@ -37,7 +37,12 @@ export default function AttendanceTable({ data }: AttendanceTableProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsSupervisor(!!localStorage.getItem("supervisor_token"));
+    const checkAuth = () => {
+      setIsSupervisor(!!localStorage.getItem("supervisor_token"));
+    };
+    checkAuth();
+    window.addEventListener("auth-change", checkAuth);
+    return () => window.removeEventListener("auth-change", checkAuth);
   }, []);
 
   useEffect(() => {

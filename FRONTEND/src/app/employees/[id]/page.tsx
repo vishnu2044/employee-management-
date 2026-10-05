@@ -62,7 +62,12 @@ export default function EmployeeDetails({ params }: { params: Promise<{ id: stri
   const [isSupervisor, setIsSupervisor] = useState(false);
 
   useEffect(() => {
-    setIsSupervisor(!!localStorage.getItem("supervisor_token"));
+    const checkAuth = () => {
+      setIsSupervisor(!!localStorage.getItem("supervisor_token"));
+    };
+    checkAuth();
+    window.addEventListener("auth-change", checkAuth);
+    return () => window.removeEventListener("auth-change", checkAuth);
   }, []);
 
   // Compute start_date and end_date strings based on periodMode

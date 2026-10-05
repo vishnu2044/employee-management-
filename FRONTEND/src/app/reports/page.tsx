@@ -57,7 +57,12 @@ export default function ReportsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("matrix");
 
   useEffect(() => {
-    setIsSupervisor(!!localStorage.getItem("supervisor_token"));
+    const checkAuth = () => {
+      setIsSupervisor(!!localStorage.getItem("supervisor_token"));
+    };
+    checkAuth();
+    window.addEventListener("auth-change", checkAuth);
+    return () => window.removeEventListener("auth-change", checkAuth);
   }, []);
 
   // Compute startDateStr and endDateStr

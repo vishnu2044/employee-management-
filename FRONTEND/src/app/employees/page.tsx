@@ -34,8 +34,13 @@ export default function EmployeesList() {
   const dateStr = format(currentDate, "yyyy-MM-dd");
 
   useEffect(() => {
-    const token = localStorage.getItem("supervisor_token");
-    setIsSupervisor(!!token);
+    const checkAuth = () => {
+      const token = localStorage.getItem("supervisor_token");
+      setIsSupervisor(!!token);
+    };
+    checkAuth();
+    window.addEventListener("auth-change", checkAuth);
+    return () => window.removeEventListener("auth-change", checkAuth);
   }, []);
 
   const { data: weekData, isLoading } = useQuery({

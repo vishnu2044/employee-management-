@@ -37,11 +37,16 @@ export default function AttendanceModal({ isOpen, onClose, employeeId, employeeN
   const [lateMinutes, setLateMinutes] = useState<number>(initialLateMinutes || 0);
 
   useEffect(() => {
-    const supervisorLoggedIn = !!localStorage.getItem("supervisor_token");
-    setIsSupervisor(supervisorLoggedIn);
-    if (isOpen && (initialEntry || initialExit) && !supervisorLoggedIn) {
-      onClose();
-    }
+    const checkAuth = () => {
+      const supervisorLoggedIn = !!localStorage.getItem("supervisor_token");
+      setIsSupervisor(supervisorLoggedIn);
+      if (isOpen && (initialEntry || initialExit) && !supervisorLoggedIn) {
+        onClose();
+      }
+    };
+    checkAuth();
+    window.addEventListener("auth-change", checkAuth);
+    return () => window.removeEventListener("auth-change", checkAuth);
   }, [isOpen, initialEntry, initialExit, onClose]);
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<AttendanceFormValues>({
