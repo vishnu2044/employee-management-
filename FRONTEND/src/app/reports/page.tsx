@@ -154,12 +154,16 @@ export default function ReportsPage() {
 
 
   return (
-    <div className="flex flex-col space-y-6 print:space-y-3 print:p-0 print:m-0 print:w-full print:block">
-      {/* Print Specific CSS ensuring exact match to on-screen design */}
+    <div className="flex flex-col space-y-6 print:space-y-3 print:p-0 print:m-0 print:w-full print:max-w-none print:block max-w-5xl mx-auto w-full">
+      {/* Print Specific CSS ensuring exact A4 landscape match */}
       <style dangerouslySetInnerHTML={{ __html: `
+        @page {
+          size: A4 landscape;
+          margin: 8mm;
+        }
         @media print {
           @page {
-            size: landscape;
+            size: A4 landscape;
             margin: 8mm;
           }
           html, body {
@@ -168,6 +172,8 @@ export default function ReportsPage() {
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
             height: auto !important;
             min-height: 0 !important;
             display: block !important;
@@ -179,6 +185,7 @@ export default function ReportsPage() {
             margin: 0 !important;
             max-width: 100% !important;
             width: 100% !important;
+            min-width: 100% !important;
             display: block !important;
           }
           .print\\:hidden, header, nav, footer {
@@ -194,6 +201,7 @@ export default function ReportsPage() {
           .overflow-x-auto, [class*="overflow-x"], [class*="overflow-hidden"] {
             overflow: visible !important;
             width: 100% !important;
+            max-width: 100% !important;
           }
           .sticky, [class*="sticky"] {
             position: static !important;
@@ -207,7 +215,7 @@ export default function ReportsPage() {
           table {
             width: 100% !important;
             max-width: 100% !important;
-            min-width: 0 !important;
+            min-width: 100% !important;
             table-layout: fixed !important;
             border-collapse: collapse !important;
           }
@@ -540,26 +548,20 @@ export default function ReportsPage() {
           <div className="overflow-x-auto print:overflow-visible print:w-full">
             <table className="w-full text-xs text-left border-collapse min-w-max print:min-w-0 print:w-full print:table-fixed">
               <colgroup className="hidden print:table-column-group">
-                <col className="print:w-[4%]" />
-                <col className="print:w-[20%]" />
-                <col className="print:w-[15%]" />
-                <col className="print:w-[7%]" />
-                <col className="print:w-[10%]" />
-                <col className="print:w-[10%]" />
+                <col className="print:w-[5%]" />
+                <col className="print:w-[35%]" />
+                <col className="print:w-[25%]" />
                 <col className="print:w-[11%]" />
-                <col className="print:w-[10%]" />
+                <col className="print:w-[11%]" />
                 <col className="print:w-[13%]" />
               </colgroup>
               <thead>
                 <tr className="border-b border-[var(--color-border)] text-[0.65rem] uppercase tracking-widest text-gray-400 font-bold bg-gray-50/90 print:bg-transparent print:border-black">
-                  <th className="px-4 py-3 w-12 text-center print:w-[4%] print:px-1 print:py-2">#</th>
-                  <th className="px-4 py-3 min-w-[200px] print:w-[20%] print:min-w-0 print:px-2 print:py-2">Employee</th>
-                  <th className="px-4 py-3 print:w-[15%] print:px-2 print:py-2">Role</th>
-                  <th className="px-4 py-3 text-center print:w-[7%] print:px-1 print:py-2">Shift</th>
-                  <th className="px-4 py-3 text-center print:w-[10%] print:px-1 print:py-2">Employment</th>
-                  <th className="px-4 py-3 text-center print:w-[10%] print:px-1 print:py-2">Present Days</th>
-                  <th className="px-4 py-3 text-center print:w-[11%] print:px-1 print:py-2">Late Shifts (SP)</th>
-                  <th className="px-4 py-3 text-center print:w-[10%] print:px-1 print:py-2">Absent Days</th>
+                  <th className="px-4 py-3 w-12 text-center print:w-[5%] print:px-1 print:py-2">#</th>
+                  <th className="px-4 py-3 min-w-[200px] print:w-[35%] print:min-w-0 print:px-2 print:py-2">Employee</th>
+                  <th className="px-4 py-3 print:w-[25%] print:px-2 print:py-2">Role</th>
+                  <th className="px-4 py-3 text-center print:w-[11%] print:px-1 print:py-2">Present Days</th>
+                  <th className="px-4 py-3 text-center print:w-[11%] print:px-1 print:py-2">Absent Days</th>
                   <th className="px-6 py-3 text-right print:w-[13%] print:px-2 print:py-2">Total Hours Worked</th>
                 </tr>
               </thead>
@@ -578,43 +580,25 @@ export default function ReportsPage() {
                         {(idx + 1).toString().padStart(2, "0")}
                       </td>
                       <td className="px-4 py-3 print:px-2 print:py-1.5">
-                        <div className="font-bold text-[var(--color-foreground)] text-xs print:text-[9.5px] truncate">
-                          {emp.employee_name}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-[var(--color-foreground)] text-xs print:text-[9.5px]">
+                            {emp.employee_name}
+                          </span>
+                          {isInactive && (
+                            <span className="bg-gray-200 text-gray-600 font-bold text-[7.5px] px-1.5 py-0.5 rounded tracking-widest uppercase">
+                              No longer works here
+                            </span>
+                          )}
                         </div>
-                        <div className="text-[10px] text-gray-400 font-mono print:text-[7.5px] truncate">
+                        <div className="text-[10px] text-gray-400 font-mono print:text-[7.5px]">
                           ID: {emp.employee_code}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-600 font-medium print:px-2 print:py-1.5 print:text-[8.5px] truncate">
                         {emp.role}
                       </td>
-                      <td className="px-4 py-3 text-center print:px-1 print:py-1.5">
-                        <span
-                          className={`text-[9px] print:text-[7.5px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                            emp.shift === "NIGHT"
-                              ? "bg-indigo-100 text-indigo-800"
-                              : "bg-amber-100 text-amber-800"
-                          }`}
-                        >
-                          {emp.shift || "DAY"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center print:px-1 print:py-1.5">
-                        {isInactive ? (
-                          <span className="bg-gray-200 text-gray-600 font-bold text-[8px] print:text-[6.5px] px-1.5 py-0.5 rounded tracking-widest uppercase">
-                            No longer works here
-                          </span>
-                        ) : (
-                          <span className="bg-[#E8F5E9] text-[var(--color-success-text)] font-bold text-[8px] print:text-[6.5px] px-1.5 py-0.5 rounded tracking-widest uppercase">
-                            Active
-                          </span>
-                        )}
-                      </td>
                       <td className="px-4 py-3 text-center font-bold text-green-700 print:px-1 print:py-1.5 print:text-[8.5px]">
                         {emp.present_days}
-                      </td>
-                      <td className="px-4 py-3 text-center font-bold text-[#D84315] print:px-1 print:py-1.5 print:text-[8.5px]">
-                        {emp.late_days}
                       </td>
                       <td className="px-4 py-3 text-center font-bold text-red-700 print:px-1 print:py-1.5 print:text-[8.5px]">
                         {emp.absent_days}

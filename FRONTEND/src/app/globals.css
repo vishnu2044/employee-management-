@@ -50,3 +50,28 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Explicit A4 Landscape Print Setup */
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+  
+  html, body {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    background-color: var(--color-background, #F7F3EC) !important;
+    color: #191716 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
